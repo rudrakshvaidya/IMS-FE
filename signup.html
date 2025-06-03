@@ -1,17 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Signup</title>
-</head>
-<body>
-    <form action="http://127.0.0.1:8000/users" method="POST">
-        <input type="text" placeholder="Name">
-        <input type="email" placeholder="Email">
-        <input type="password" placeholder="Password">
-        <input type="number" placeholder="Phone Number">
-        <button type="submit" value="create account">Create account</button>
-    </form>
-</body>
+    <script>
+      function createAccount() {
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const phone = document.getElementById("phone").value;
+
+        fetch("http://127.0.0.1:8000/users", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, email, password, phone }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("p").innerText = data.error || data.message;
+          });
+      }
+    </script>
+  </head>
+  <body>
+    <div>
+      <input id="name" type="text" placeholder="Name" />
+      <input id="email" type="email" placeholder="Email" />
+      <input id="password" type="password" placeholder="Password" />
+      <input id="phone" type="number" placeholder="Phone Number" />
+      <button type="submit" value="create account" onclick="createAccount()">
+        Create account
+      </button>
+      <p id="p"></p>
+    </div>
+  </body>
 </html>
