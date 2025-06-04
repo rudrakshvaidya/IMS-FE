@@ -1,40 +1,64 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Signup</title>
-    <script>
-      function createAccount() {
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
-        const phone = document.getElementById("phone").value;
+  <!DOCTYPE html>
+  <html lang="en" data-bs-theme="auto" data-lt-installed="true">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Signup</title>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+      <script>
+        function createAccount() {
+          const name = document.getElementById("name").value;
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+          const phone = document.getElementById("phone").value;
 
-        fetch("http://127.0.0.1:8000/users", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name, email, password, phone }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            document.getElementById("p").innerText = data.error || data.message;
-          });
-      }
-    </script>
-  </head>
-  <body>
-    <div>
-      <input id="name" type="text" placeholder="Name" />
-      <input id="email" type="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password" />
-      <input id="phone" type="number" placeholder="Phone Number" />
-      <button type="submit" value="create account" onclick="createAccount()">
-        Create account
-      </button>
-      <p id="p"></p>
-    </div>
-  </body>
-</html>
+          fetch("http://127.0.0.1:8000/users", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name, email, password, phone }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              document.getElementById("p").innerText = data.error || data.message;
+            });
+        }
+      </script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js" integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO" crossorigin="anonymous"></script>
+    </head>
+    
+    <body class="d-flex align-items-center justify-content-center vh-100 bg-body-tertiary">
+      <main class="form-signin" style="width: 330px;">
+        <div class="container">
+          <div class="card p-4 shadow-sm">
+            <h1 class="h3 mb-3 fw-normal text-center">Signup</h1>
+
+            <div class="form-floating mb-2"> 
+              <input type="text" class="form-control" id="name" placeholder="Name"> 
+              <label for="name">Name</label> 
+            </div>
+            
+            <div class="form-floating mb-2"> 
+              <input type="email" class="form-control" id="email" placeholder="name@gmail.com"> 
+              <label for="email">Email</label> 
+            </div>
+
+            <div class="form-floating mb-2"> 
+              <input type="number" class="form-control" id="phone" placeholder="Phone Number"> 
+              <label for="phone">Phone Number</label> 
+            </div>
+
+            <div class="form-floating mb-3"> 
+              <input type="password" class="form-control" id="password" placeholder="Password"> 
+              <label for="password">Password</label> 
+            </div>
+
+            <button class="btn btn-primary w-100 py-2" type="submit" onclick="createAccount()">Sign up</button>
+
+            <p id="p" class="text-center mt-2"></p>
+          </div>
+        </div>
+      </main>
+    </body>
+  </html>
