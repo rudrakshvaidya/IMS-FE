@@ -35,8 +35,7 @@ async function getPlayers() {
               <img src="${data[i].image}" class="card-img-top" alt="${data[i].name}">
               <div class="card-body">
                 <h5 class="card-title">${data[i].name}</h5>
-                <p class="card-text">Playing for: ${data[i].playingFor}</p>
-                <p class="card-text">Email: ${data[i].email}</p>
+                <p class="card-text">Playing for: ${data[i].playingForName}</p>
                 <p class="card-text">${data[i].nationality}</p>
                 <p class="card-text">${data[i].specialization}</p>
                 <button onclick="storePlayerId('${data[i]._id}')" class="btn btn-primary">Stats</button>

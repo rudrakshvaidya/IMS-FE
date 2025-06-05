@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Team</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <script>
+    let teamId;
+
+    // Fetch and populate form
+    async function loadTeamData() {
+      teamId = localStorage.getItem("editTeamId");
+
+      if (!teamId) {
+        document.getElementById("response").innerHTML = '<div class="alert alert-danger">No team ID found in localStorage.</div>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/teams/${teamId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({}) // Empty PATCH just to fetch team
+        });
+
+        const team = await res.json();
+
+        if (!res.ok) {
+          throw new Error(team.error || "Could not fetch team data");
+        }
+
+        // Populate form
+        for (const key in team) {
+          if (document.getElementById(key)) {
+            document.getElementById(key).value = team[key];
+          }
+        }
+
+      } catch (err) {
+        document.getElementById("response").innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    }
+
+    // Submit updates
+    async function updateTeam() {
+      const updatedTeam = {
+        name: document.getElementById("name").value,
+        win: document.getElementById("win").value,
+        captain: document.getElementById("captain").value,
+        coach: document.getElementById("coach").value,
+        owner: document.getElementById("owner").value,
+        logo: document.getElementById("logo").value,
+        moto: document.getElementById("moto").value,
+        state: document.getElementById("state").value,
+      };
+
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/teams/${teamId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(updatedTeam)
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          throw new Error(result.error || "Update failed");
+        }
+
+        document.getElementById("response").innerHTML = `<div class="alert alert-success">${result.message}</div>`;
+      } catch (err) {
+        document.getElementById("response").innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    }
+
+    window.onload = loadTeamData;
+  </script>
+</head>
+<body class="container my-4">
+  <h2>Edit Team Details</h2>
+  <div id="response" class="my-3"></div>
+  <form onsubmit="event.preventDefault(); updateTeam();">
+    <div class="mb-3">
+      <label class="form-label">Team Name</label>
+      <input type="text" id="name" class="form-control" required/>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Wins</label>
+      <input type="text" id="win" class="form-control"/>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Captain</label>
+      <input type="text" id="captain" class="form-control"/>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Coach</label>
+      <input type="text" id="coach" class="form-control"/>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Owner</label>
+      <input type="text" id="owner" class="form-control"/>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Logo URL</label>
+      <input type="text" id="logo" class="form-control"/>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Moto</label>
+      <input type="text" id="moto" class="form-control"/>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">State</label>
+      <input type="text" id="state" class="form-control"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+</body>
+</html>
