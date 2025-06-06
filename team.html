@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,58 +10,911 @@
       integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
       crossorigin="anonymous"
     />
-<script>
-
-function storeteamId(teamId) {
-  window.location.href = `teamstats.html?id=${teamId}`;
-}
-
-async function getTeams() {   
-  try {
-    const response = await fetch("http://127.0.0.1:8000/teams", {
-      headers: {
-        "Content-Type": "application/json",
-        token: localStorage.getItem("token"),
-      },
-    });
-    const data = await response.json();
-    if (response.status === 200) {
-      const team = document.getElementById("team");
-      team.innerHTML = '<div class="row">';
-      for(let i = 0; i < data.length; i++) {
-        team.innerHTML += `
-          <div class="col-md-4 mb-3">
-            <div class="card">
-              <img src="${data[i].logo}" class="card-img-top" alt="${data[i].name}">
-              <div class="card-body">
-                <h5 class="card-title">${data[i].name}</h5>
-                <p class="card-text">WINS: ${data[i].win}</p>
-                <p class="card-text">Captain: ${data[i].captain}</p>
-                <button onclick="storeteamId('${data[i]._id}')" class="btn btn-primary">View</button>
-              </div>
-            </div>
-          </div>`;
-      }
-      team.innerHTML += '</div>';
-    } else {
-      document.getElementById("response").textContent = 
-        "Bad Request (400): " + JSON.stringify(data);
-    }
-  } catch (error) {
-    document.getElementById("response").textContent = 
-      "Error: " + error.message;
-  }
-}
-      getTeams()
-      </script>
+    <style>
+        .admin-controls {
+            display: none;
+        }
+        .card-img-top {
+            height: 200px;
+            object-fit: cover;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Teams</h1>
+            <button id="addTeamBtn" class="btn btn-success admin-controls" onclick="showAddTeamModal()">
+                <i class="fas fa-plus"></i> Add Team
+            </button>
+        </div>
+        
+        <p id="response"></p>
+        <div id="team"></div>
+    </div>
 
-    <h1>teams</h1>
-    <p id="response"></p>
-    <div id="team">
-    </div>    
+   
+    <div class="modal fade" id="teamModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Add Team</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="teamForm">
+                        <input type="hidden" id="teamId" name="teamId">
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="teamName" class="form-label">Team Name</label>
+                                <input type="text" class="form-control" id="teamName" name="name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="teamCaptain" class="form-label">Captain</label>
+                                <input type="text" class="form-control" id="teamCaptain" name="captain" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="teamCoach" class="form-label">Coach</label>
+                                <input type="text" class="form-control" id="teamCoach" name="coach" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="teamOwner" class="form-label">Owner</label>
+                                <input type="text" class="form-control" id="teamOwner" name="owner" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="teamState" class="form-label">State</label>
+                                <input type="text" class="form-control" id="teamState" name="state" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="teamLogo" class="form-label">Logo URL</label>
+                                <input type="url" class="form-control" id="teamLogo" name="logo" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="teamWins" class="form-label">Wins (Years)</label>
+                            <input type="text" class="form-control" id="teamWins" name="win" 
+                                   placeholder="e.g., 2010, 2011, 2018, 2021, 2023">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="teamMoto" class="form-label">Motto</label>
+                            <input type="text" class="form-control" id="teamMoto" name="moto">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTeam()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this team? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isAdmin = false;
+        let currentTeamId = null;
+        let teamModal, deleteModal;
+
+        // Initialize modals
+        document.addEventListener('DOMContentLoaded', function() {
+            teamModal = new bootstrap.Modal(document.getElementById('teamModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        });
+
+        // Check URL parameters for admin status
+        function checkAdminStatus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            isAdmin = urlParams.get('admin') === 'true';
+            
+            if (isAdmin) {
+                // Show admin controls
+                const adminControls = document.querySelectorAll('.admin-controls');
+                adminControls.forEach(control => {
+                    control.style.display = 'block';
+                });
+            }
+        }
+
+        function storeteamId(teamId) {
+            window.location.href = `teamstats.html?id=${teamId}`;
+        }
+
+        async function getTeams() {   
+            try {
+                const response = await fetch("http://127.0.0.1:8000/teams", {
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                });
+                const data = await response.json();
+                
+                if (response.status === 200) {
+                    const team = document.getElementById("team");
+                    team.innerHTML = '<div class="row">';
+                    
+                    for(let i = 0; i < data.length; i++) {
+                        const adminButtons = isAdmin ? `
+                            <div class="btn-group mt-2" role="group">
+                                <button onclick="editTeam('${data[i]._id}')" class="btn btn-sm btn-outline-primary">Edit</button>
+                                <button onclick="deleteTeam('${data[i]._id}')" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </div>
+                        ` : '';
+                        
+                        team.innerHTML += `
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <img src="${data[i].logo}" class="card-img-top" alt="${data[i].name}">
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="card-title">${data[i].name}</h5>
+                                        <p class="card-text"><strong>Captain:</strong> ${data[i].captain}</p>
+                                        <p class="card-text"><strong>Coach:</strong> ${data[i].coach || 'N/A'}</p>
+                                        <p class="card-text"><strong>Owner:</strong> ${data[i].owner || 'N/A'}</p>
+                                        <p class="card-text"><strong>State:</strong> ${data[i].state || 'N/A'}</p>
+                                        <p class="card-text"><strong>Wins:</strong> ${data[i].win || 'None'}</p>
+                                        <p class="card-text"><strong>Motto:</strong> ${data[i].moto || 'N/A'}</p>
+                                        <div class="mt-auto">
+                                            <button onclick="storeteamId('${data[i]._id}')" class="btn btn-primary">View</button>
+                                            ${adminButtons}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                    team.innerHTML += '</div>';
+                } else {
+                    document.getElementById("response").textContent = 
+                        "Bad Request (400): " + JSON.stringify(data);
+                }
+            } catch (error) {
+                document.getElementById("response").textContent = 
+                    "Error: " + error.message;
+            }
+        }
+
+        function showAddTeamModal() {
+            document.getElementById('modalTitle').textContent = 'Add Team';
+            document.getElementById('teamForm').reset();
+            document.getElementById('teamId').value = '';
+            teamModal.show();
+        }
+
+        async function editTeam(teamId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/teams/${teamId}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                });
+                
+                if (response.status === 200) {
+                    const team = await response.json();
+                    
+                    document.getElementById('modalTitle').textContent = 'Edit Team';
+                    document.getElementById('teamId').value = team._id;
+                    document.getElementById('teamName').value = team.name;
+                    document.getElementById('teamCaptain').value = team.captain;
+                    document.getElementById('teamCoach').value = team.coach || '';
+                    document.getElementById('teamOwner').value = team.owner || '';
+                    document.getElementById('teamState').value = team.state || '';
+                    document.getElementById('teamLogo').value = team.logo;
+                    document.getElementById('teamWins').value = team.win || '';
+                    document.getElementById('teamMoto').value = team.moto || '';
+                    
+                    teamModal.show();
+                } else {
+                    alert('Error loading team data');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function saveTeam() {
+            const form = document.getElementById('teamForm');
+            const formData = new FormData(form);
+            const teamId = document.getElementById('teamId').value;
+            
+            const teamData = {
+                name: formData.get('name'),
+                captain: formData.get('captain'),
+                coach: formData.get('coach'),
+                owner: formData.get('owner'),
+                state: formData.get('state'),
+                logo: formData.get('logo'),
+                win: formData.get('win'),
+                moto: formData.get('moto')
+            };
+
+            try {
+                const url = teamId 
+                    ? `http://127.0.0.1:8000/adminteams/${teamId}`
+                    : 'http://127.0.0.1:8000/adminteams';
+                    
+                const method = teamId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                    body: JSON.stringify(teamData)
+                });
+
+                if (response.status === 200 || response.status === 201) {
+                    teamModal.hide();
+                    getTeams(); // Refresh the teams list
+                    alert(teamId ? 'Team updated successfully!' : 'Team added successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + JSON.stringify(error));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function deleteTeam(teamId) {
+            currentTeamId = teamId;
+            deleteModal.show();
+        }
+
+        async function confirmDelete() {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/adminteams/${currentTeamId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                });
+
+                if (response.status === 200) {
+                    deleteModal.hide();
+                    getTeams(); // Refresh the teams list
+                    alert('Team deleted successfully!');
+                } else {
+                    const error = await response.json();
+                    alert('Error: ' + JSON.stringify(error));
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        // Initialize the page
+        checkAdminStatus();
+        getTeams();
+    </script>
+</body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teams</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .team-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        .team-image {
+            height: 250px;
+            width: 100%;
+            object-fit:contain;
+            object-position: center top;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+  
+        
+        
+        .card-body {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .team-name {
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .team-info {
+            color: #5a6c7d;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .team-info strong {
+            color: #34495e;
+            font-weight: 600;
+        }
+        
+        .stats-section {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin: 1rem 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .modal-content {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+        
+        .modal-title {
+            font-weight: 700;
+        }
+        
+        .form-label {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .section-header {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .no-teams {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .team-image {
+                height: 200px;
+            }
+            
+            .action-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="page-title">
+                            <i class="fas fa-shield-alt me-3"></i>Teams Management
+                        </h1>
+                        <p class="mb-0 opacity-75">Manage your teams and their details</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="dashboard.html" class="btn btn-secondary me-2">
+                            <i class="fas fa-arrow-left me-2"></i>Dashboard
+                        </a>
+                        <button id="addTeamBtn" class="btn btn-success admin-controls" style="display: none;" onclick="showAddTeamModal()">
+                            <i class="fas fa-plus me-2"></i>Add Team
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div id="response"></div>
+            <div id="team"></div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Team Modal -->
+    <div class="modal fade" id="teamModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">
+                        <i class="fas fa-shield-alt me-2"></i>Add/Edit Team
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="teamForm">
+                        <input type="hidden" id="teamId" name="teamId">
+                        
+                        <h6 class="section-header">
+                            <i class="fas fa-info-circle me-2"></i>Team Information
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="teamName" class="form-label">Team Name *</label>
+                                <input type="text" class="form-control" id="teamName" name="name" required placeholder="Enter team name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="teamCaptain" class="form-label">Captain *</label>
+                                <input type="text" class="form-control" id="teamCaptain" name="captain" required placeholder="Enter captain's name">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="teamCoach" class="form-label">Coach *</label>
+                                <input type="text" class="form-control" id="teamCoach" name="coach" required placeholder="Enter coach's name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="teamOwner" class="form-label">Owner *</label>
+                                <input type="text" class="form-control" id="teamOwner" name="owner" required placeholder="Enter owner's name">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="teamState" class="form-label">State *</label>
+                                <input type="text" class="form-control" id="teamState" name="state" required placeholder="Enter state">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="teamLogo" class="form-label">Logo URL *</label>
+                                <input type="url" class="form-control" id="teamLogo" name="logo" required placeholder="https://example.com/team-logo.jpg">
+                                <div class="form-text">Provide a URL to the team's logo</div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="section-header">
+                            <i class="fas fa-trophy me-2"></i>Team Achievements
+                        </h6>
+                        <div class="mb-3">
+                            <label for="teamWins" class="form-label">Wins (Years)</label>
+                            <input type="text" class="form-control" id="teamWins" name="win" placeholder="e.g., 2010, 2011, 2018, 2021, 2023">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="teamMoto" class="form-label">Motto</label>
+                            <input type="text" class="form-control" id="teamMoto" name="moto" placeholder="Enter team motto">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveTeam()">
+                        <i class="fas fa-save me-2"></i>Save Team
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this team? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">
+                        <i class="fas fa-trash me-2"></i>Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let isAdmin = false;
+        let currentTeamId = null;
+        let teamModal, deleteModal;
+
+        // Initialize modals
+        document.addEventListener('DOMContentLoaded', function() {
+            teamModal = new bootstrap.Modal(document.getElementById('teamModal'));
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        });
+
+        // Check URL parameters for admin status
+        function checkAdminStatus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            isAdmin = urlParams.get('admin') === 'true';
+            
+            if (isAdmin) {
+                // Show admin controls
+                const adminControls = document.querySelectorAll('.admin-controls');
+                adminControls.forEach(control => {
+                    control.style.display = 'inline-block';
+                });
+            }
+        }
+
+        function storeteamId(teamId) {
+            window.location.href = `teamstats.html?id=${teamId}`;
+        }
+
+        async function getTeams() {   
+            try {
+                const response = await fetch("http://127.0.0.1:8000/teams", {
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                });
+                const data = await response.json();
+                
+                if (response.status === 200) {
+                    const team = document.getElementById("team");
+                    
+                    if (data.length === 0) {
+                        team.innerHTML = `
+                            <div class="no-teams">
+                                <i class="fas fa-shield-alt fa-3x mb-3 text-muted"></i>
+                                <h4>No Teams Found</h4>
+                                <p>There are currently no teams in the system.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    team.innerHTML = '<div class="row g-4">';
+                    
+                    for(let i = 0; i < data.length; i++) {
+                        const adminButtons = isAdmin ? `
+                            <button class="btn btn-warning btn-sm" onclick="editTeam('${data[i]._id}')">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteTeam('${data[i]._id}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        ` : '';
+                        
+                        team.innerHTML += `
+                            <div class="col-lg-4 col-md-6 col-sm-12">
+                                <div class="card team-card h-100">
+                                    <img src="${data[i].logo || 'https://via.placeholder.com/300x250/667eea/ffffff?text=No+Image'}" 
+                                         class="team-image" alt="${data[i].name}" 
+                                         onerror="this.src='https://via.placeholder.com/300x250/667eea/ffffff?text=No+Image'">     
+                                    <div class="card-body d-flex flex-column">
+                                        <h5 class="team-name">${data[i].name}</h5>
+                                        <div class="team-details mb-3">
+                                            <p class="team-info mb-2">
+                                                <i class="fas fa-user-tie text-primary me-2"></i>
+                                                <strong>Captain:</strong> ${data[i].captain}
+                                            </p>
+                                            <p class="team-info mb-2">
+                                                <i class="fas fa-chalkboard-teacher text-success me-2"></i>
+                                                <strong>Coach:</strong> ${data[i].coach || 'N/A'}
+                                            </p>
+                                            <p class="team-info mb-2">
+                                                <i class="fas fa-user text-info me-2"></i>
+                                                <strong>Owner:</strong> ${data[i].owner || 'N/A'}
+                                            </p>
+                                            <p class="team-info mb-2">
+                                                <i class="fas fa-map-marker-alt text-warning me-2"></i>
+                                                <strong>State:</strong> ${data[i].state || 'N/A'}
+                                            </p>
+                                        </div>
+                                        <div class="stats-section">
+                                            <h6 class="mb-2"><i class="fas fa-trophy me-2"></i>Team Achievements</h6>
+                                            <p class="team-info mb-2">
+                                                <strong>Wins:</strong> ${data[i].win || 'None'}
+                                            </p>
+                                            <p class="team-info mb-2">
+                                                <strong>Motto:</strong> ${data[i].moto || 'N/A'}
+                                            </p>
+                                        </div>
+                                        <div class="mt-auto">
+                                            <button class="btn btn-primary w-100 mb-2" onclick="storeteamId('${data[i]._id}')">
+                                                <i class="fas fa-chart-bar me-2"></i>View Detailed Stats
+                                            </button>
+                                            <div class="action-buttons">
+                                                ${adminButtons}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    team.innerHTML += '</div>';
+                } else {
+                    document.getElementById("response").innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Bad Request (400): ${JSON.stringify(data)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById("response").innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function showAddTeamModal() {
+            document.getElementById('modalTitle').textContent = 'Add New Team';
+            document.getElementById('teamForm').reset();
+            document.getElementById('teamId').value = '';
+            teamModal.show();
+        }
+
+        async function editTeam(teamId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/teams/${teamId}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                });
+                
+                if (response.status === 200) {
+                    const team = await response.json();
+                    
+                    document.getElementById('modalTitle').textContent = 'Edit Team';
+                    document.getElementById('teamId').value = team._id;
+                    document.getElementById('teamName').value = team.name;
+                    document.getElementById('teamCaptain').value = team.captain;
+                    document.getElementById('teamCoach').value = team.coach || '';
+                    document.getElementById('teamOwner').value = team.owner || '';
+                    document.getElementById('teamState').value = team.state || '';
+                    document.getElementById('teamLogo').value = team.logo;
+                    document.getElementById('teamWins').value = team.win || '';
+                    document.getElementById('teamMoto').value = team.moto || '';
+                    
+                    teamModal.show();
+                } else {
+                    showAlert('Error loading team data', 'danger');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'danger');
+            }
+        }
+
+        async function saveTeam() {
+            const form = document.getElementById('teamForm');
+            const formData = new FormData(form);
+            const teamId = document.getElementById('teamId').value;
+            
+            const teamData = {
+                name: formData.get('name'),
+                captain: formData.get('captain'),
+                coach: formData.get('coach'),
+                owner: formData.get('owner'),
+                state: formData.get('state'),
+                logo: formData.get('logo'),
+                win: formData.get('win'),
+                moto: formData.get('moto')
+            };
+
+            // Validation
+            if (!teamData.name || !teamData.captain || !teamData.coach || !teamData.owner || !teamData.state || !teamData.logo) {
+                showAlert('All required fields must be filled', 'warning');
+                return;
+            }
+
+            try {
+                const url = teamId 
+                    ? `http://127.0.0.1:8000/adminteams/${teamId}`
+                    : 'http://127.0.0.1:8000/adminteams';
+                    
+                const method = teamId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                    body: JSON.stringify(teamData)
+                });
+
+                if (response.status === 200 || response.status === 201) {
+                    teamModal.hide();
+                    getTeams(); // Refresh the teams list
+                    showAlert(teamId ? 'Team updated successfully!' : 'Team added successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert('Error: ' + JSON.stringify(error), 'danger');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'danger');
+            }
+        }
+
+        function deleteTeam(teamId) {
+            currentTeamId = teamId;
+            deleteModal.show();
+        }
+
+        async function confirmDelete() {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/adminteams/${currentTeamId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        "Content-Type": "application/json",
+                        token: localStorage.getItem("token"),
+                    },
+                });
+
+                if (response.status === 200) {
+                    deleteModal.hide();
+                    getTeams(); // Refresh the teams list
+                    showAlert('Team deleted successfully!', 'success');
+                } else {
+                    const error = await response.json();
+                    showAlert('Error: ' + JSON.stringify(error), 'danger');
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'danger');
+            }
+        }
+
+        function showAlert(message, type) {
+            const alert = document.createElement("div");
+            alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alert.style.top = "20px";
+            alert.style.right = "20px";
+            alert.style.zIndex = "9999";
+            alert.style.minWidth = "300px";
+            alert.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'} me-2"></i>
+                    <span>${message}</span>
+                    <button class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            document.body.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        checkAdminStatus();
+        getTeams();
+    </script>
 </body>
 </html>

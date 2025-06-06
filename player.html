@@ -1,68 +1,640 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Players</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
-      crossorigin="anonymous"
-    />
-<script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Players</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    .player-card {
+      transition: all 0.3s ease;
+      border: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 15px;
+      overflow: hidden;
+    }
+    
+    .player-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .player-image {
+      height: 250px;
+      width: 100%;
+      object-fit: cover;
+      object-position: center top;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .player-name {
+      color: #2c3e50;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .player-info {
+      color: #5a6c7d;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .player-info strong {
+      color: #34495e;
+      font-weight: 600;
+    }
+    
+    .stats-section {
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 10px;
+      padding: 0.75rem;
+      margin: 1rem 0;
+      border-left: 4px solid #3498db;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+      transform: translateY(-2px);
+    }
+    
+    .btn-warning {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border: none;
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    
+    .btn-secondary {
+      background: linear-gradient(135deg, #bdc3c7 0%, #2c3e50 100%);
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    
+    .page-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem 0;
+      border-radius: 15px;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .page-title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .modal-content {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 15px 15px 0 0;
+      border-bottom: none;
+    }
+    
+    .modal-title {
+      font-weight: 700;
+    }
+    
+    .form-label {
+      color: #2c3e50;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-control, .form-select {
+      border: 2px solid #e9ecef;
+      border-radius: 10px;
+      padding: 0.75rem;
+      transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .section-header {
+      color: #667eea;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e9ecef;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .no-players {
+      text-align: center;
+      padding: 3rem;
+      color: #6c757d;
+      font-size: 1.2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .page-title {
+        font-size: 2rem;
+      }
+      
+      .player-image {
+        height: 200px;
+      }
+      
+      .action-buttons {
+        justify-content: center;
+      }
+    }
+  </style>
+  <script>
+let isAdmin = false;
+let teamList = [];
+
+async function checkAdminStatus() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const adminParam = urlParams.get("admin");
+
+    if (adminParam === "true") {
+      const response = await fetch("http://127.0.0.1:8000/users/roles", {
+        headers: {
+          "Content-Type": "application/json",
+          token: localStorage.getItem("token"),
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok && data.isAdmin === true) {
+        isAdmin = true;
+        document.getElementById("addPlayerBtn").style.display = "inline-block";
+      }
+    }
+  } catch (error) {
+    console.error("Admin check failed:", error);
+  }
+}
 
 function storePlayerId(playerId) {
   window.location.href = `playerstats.html?id=${playerId}`;
 }
 
-async function getPlayers() {   
+function showAddPlayerModal() {
+  document.getElementById("modalTitle").textContent = "Add New Player";
+  document.getElementById("playerForm").reset();
+  document.getElementById("playerId").value = "";
+  const modal = new bootstrap.Modal(document.getElementById("playerModal"));
+  modal.show();
+}
+
+function showEditPlayerModal(id, player) {
+  document.getElementById("modalTitle").textContent = "Edit Player";
+  document.getElementById("playerId").value = id;
+  document.getElementById("playerName").value = player.name;
+  document.getElementById("playerPassword").value = player.password || "";
+  document.getElementById("playerEmail").value = player.email;
+  document.getElementById("playerPhone").value = player.phone;
+  document.getElementById("playerNationality").value = player.nationality;
+  document.getElementById("playerSpecialization").value = player.specialization;
+  document.getElementById("playerImage").value = player.image;
+  document.getElementById("playerTeam").value = player.playingFor;
+  
+  // Fill stats fields
+  if (player.stats) {
+    document.getElementById("playerRuns").value = player.stats.runs || "";
+    document.getElementById("playerDebut").value = player.stats.debut || "";
+    document.getElementById("playerDob").value = player.stats.dob || "";
+    document.getElementById("playerMatches").value = player.stats.matches || "";
+  }
+
+  const modal = new bootstrap.Modal(document.getElementById("playerModal"));
+  modal.show();
+}
+
+async function fetchTeams() {
   try {
-    const response = await fetch("http://127.0.0.1:8000/players", {
+    const res = await fetch("http://127.0.0.1:8000/teams", {
+      headers: {
+        token: localStorage.getItem("token"),
+      },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      teamList = data;
+      const select = document.getElementById("playerTeam");
+      select.innerHTML = '<option value="">--Select Team--</option>';
+      data.forEach(team => {
+        const opt = document.createElement("option");
+        opt.value = team._id;
+        opt.textContent = team.name;
+        select.appendChild(opt);
+      });
+    }
+  } catch (err) {
+    console.error("Failed to load teams:", err);
+  }
+}
+
+async function savePlayer() {
+  const id = document.getElementById("playerId").value;
+  const selectedTeamId = document.getElementById("playerTeam").value;
+  const selectedTeam = teamList.find(team => team._id === selectedTeamId);
+  
+  const data = {
+    name: document.getElementById("playerName").value,
+    password: document.getElementById("playerPassword").value,
+    email: document.getElementById("playerEmail").value,
+    phone: document.getElementById("playerPhone").value,
+    nationality: document.getElementById("playerNationality").value,
+    specialization: document.getElementById("playerSpecialization").value,
+    image: document.getElementById("playerImage").value,
+    playingFor: selectedTeamId,
+    playingForName: selectedTeam ? selectedTeam.name : "",
+    stats: {
+      runs: document.getElementById("playerRuns").value || "0",
+      debut: document.getElementById("playerDebut").value || "",
+      dob: document.getElementById("playerDob").value || "",
+      matches: document.getElementById("playerMatches").value || "0"
+    }
+  };
+
+  // Validation
+  if (!data.name || !data.nationality || !data.specialization || !data.playingFor) {
+    showAlert("Name, nationality, specialization, and team are required fields", "warning");
+    return;
+  }
+
+  if (!id && (!data.password || !data.email || !data.phone)) {
+    showAlert("Password, email, and phone are required for new players", "warning");
+    return;
+  }
+
+  const method = id ? "PATCH" : "POST";
+  const url = id ? `http://127.0.0.1:8000/players/${id}` : "http://127.0.0.1:8000/players";
+
+  try {
+    const res = await fetch(url, {
+      method,
       headers: {
         "Content-Type": "application/json",
         token: localStorage.getItem("token"),
       },
+      body: JSON.stringify(data),
     });
-    const data = await response.json();
-    if (response.status === 200) {
-      const player = document.getElementById("player");
-      player.innerHTML = '<div class="row">';
-      for(let i = 0; i < data.length; i++) {
-        player.innerHTML += `
-          <div class="col-md-4 mb-3">
-            <div class="card">
-              <img src="${data[i].image}" class="card-img-top" alt="${data[i].name}">
-              <div class="card-body">
-                <h5 class="card-title">${data[i].name}</h5>
-                <p class="card-text">Playing for: ${data[i].playingForName}</p>
-                <p class="card-text">${data[i].nationality}</p>
-                <p class="card-text">${data[i].specialization}</p>
-                <button onclick="storePlayerId('${data[i]._id}')" class="btn btn-primary">Stats</button>
-              </div>
-            </div>
-          </div>`;
-      }
-      player.innerHTML += '</div>';
+
+    const result = await res.json();
+    if (res.ok) {
+      bootstrap.Modal.getInstance(document.getElementById("playerModal")).hide();
+      getPlayers();
+      showAlert(id ? "Player updated successfully!" : "Player added successfully!", "success");
     } else {
-      document.getElementById("response").textContent = 
-        "Bad Request (400): " + JSON.stringify(data);
+      showAlert(result.error || "Failed to save player", "danger");
     }
-  } catch (error) {
-    document.getElementById("response").textContent = 
-      "Error: " + error.message;
+  } catch (err) {
+    showAlert("Error: " + err.message, "danger");
   }
 }
-      getPlayers()
-      </script>
-</head>
 
-<body>
+async function deletePlayer(id, name) {
+  if (!confirm(`Are you sure you want to delete player ${name}?`)) return;
+  try {
+    const res = await fetch(`http://127.0.0.1:8000/players/${id}`, {
+      method: "DELETE",
+      headers: {
+        token: localStorage.getItem("token"),
+      },
+    });
+    if (res.ok) {
+      getPlayers();
+      showAlert("Player deleted successfully!", "success");
+    } else {
+      const data = await res.json();
+      showAlert(data.error || "Failed to delete player", "danger");
+    }
+  } catch (err) {
+    showAlert("Error: " + err.message, "danger");
+  }
+}
 
-    <h1>Players</h1>
-    <p id="response"></p>
-    <div id="player">
-    </div>    
+function showAlert(message, type) {
+  const alert = document.createElement("div");
+  alert.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+  alert.style.top = "20px";
+  alert.style.right = "20px";
+  alert.style.zIndex = "9999";
+  alert.style.minWidth = "300px";
+  alert.innerHTML = `
+    <div class="d-flex align-items-center">
+      <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'times-circle'} me-2"></i>
+      <span>${message}</span>
+      <button class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+  document.body.appendChild(alert);
+  setTimeout(() => alert.remove(), 4000);
+}
+
+async function getPlayers() {
+  try {
+    const res = await fetch("http://127.0.0.1:8000/players", {
+      headers: {
+        token: localStorage.getItem("token"),
+      },
+    });
+    const players = await res.json();
+
+    const container = document.getElementById("player");
     
+    if (players.length === 0) {
+      container.innerHTML = `
+        <div class="no-players">
+          <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+          <h4>No Players Found</h4>
+          <p>There are currently no players in the system.</p>
+        </div>
+      `;
+      return;
+    }
+
+    let playersHTML = '<div class="row g-4">';
+    
+    players.forEach(p => {
+      const team = teamList.find(t => t._id === p.playingFor);
+      const adminBtns = isAdmin ? `
+        <button class="btn btn-warning btn-sm" onclick='showEditPlayerModal("${p._id}", ${JSON.stringify(p).replace(/'/g, "&#39;")})'>
+          <i class="fas fa-edit"></i> Edit
+        </button>
+        <button class="btn btn-danger btn-sm" onclick='deletePlayer("${p._id}", "${p.name}")'>
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      ` : "";
+      
+      playersHTML += `
+        <div class="col-lg-4 col-md-6 col-sm-12">
+          <div class="card player-card h-100">
+            <img src="${p.image || 'https://via.placeholder.com/300x250/667eea/ffffff?text=No+Image'}" 
+                 class="player-image" alt="${p.name}" 
+                 onerror="this.src='https://via.placeholder.com/300x250/667eea/ffffff?text=No+Image'">
+            <div class="card-body d-flex flex-column">
+              <h5 class="player-name">${p.name}</h5>
+              
+              <div class="player-details mb-3">
+                <p class="player-info mb-2">
+                  <i class="fas fa-shield-alt text-primary me-2"></i>
+                  <strong>Team:</strong> ${team?.name || p.playingForName || "Unknown"}
+                </p>
+                <p class="player-info mb-2">
+                  <i class="fas fa-flag text-success me-2"></i>
+                  <strong>Nationality:</strong> ${p.nationality}
+                </p>
+                <p class="player-info mb-2">
+                  <i class="fas fa-user-tag text-info me-2"></i>
+                  <strong>Role:</strong> ${p.specialization}
+                </p>
+              </div>
+              
+              ${p.stats ? `
+              <div class="stats-section">
+                <h6 class="mb-2"><i class="fas fa-chart-line me-2"></i>Career Stats</h6>
+                <div class="row text-center">
+                  <div class="col-6">
+                    <div class="stat-item">
+                      <strong class="d-block text-primary">${p.stats.runs || 'N/A'}</strong>
+                      <small class="text-muted">Runs</small>
+                    </div>
+                  </div>
+                  <div class="col-6">
+                    <div class="stat-item">
+                      <strong class="d-block text-success">${p.stats.matches || 'N/A'}</strong>
+                      <small class="text-muted">Matches</small>
+                    </div>
+                  </div>
+                </div>
+                ${p.stats.debut ? `
+                <div class="text-center mt-2">
+                  <small class="text-muted"><i class="fas fa-calendar me-1"></i>Debut: ${p.stats.debut}</small>
+                </div>
+                ` : ''}
+              </div>
+              ` : ''}
+              
+              <div class="mt-auto">
+                <button class="btn btn-primary w-100 mb-2" onclick='storePlayerId("${p._id}")'>
+                  <i class="fas fa-chart-bar me-2"></i>View Detailed Stats
+                </button>
+                <div class="action-buttons">
+                  ${adminBtns}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    playersHTML += '</div>';
+    container.innerHTML = playersHTML;
+
+  } catch (err) {
+    document.getElementById("response").innerHTML = `
+      <div class="alert alert-danger">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        Error loading players. Please try again.
+      </div>
+    `;
+    console.error("Error loading players:", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  await checkAdminStatus();
+  await fetchTeams();
+  getPlayers();
+});
+  </script>
+</head>
+<body class="bg-light">
+  <div class="container-fluid py-4">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="container">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h1 class="page-title">
+              <i class="fas fa-users me-3"></i>Players Management
+            </h1>
+            <p class="mb-0 opacity-75">Manage your team players and their statistics</p>
+          </div>
+          <div class="col-md-4 text-md-end">
+            <a href="dashboard.html" class="btn btn-secondary me-2">
+              <i class="fas fa-arrow-left me-2"></i>Dashboard
+            </a>
+            <button id="addPlayerBtn" class="btn btn-success" style="display: none;" onclick="showAddPlayerModal()">
+              <i class="fas fa-plus me-2"></i>Add Player
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div id="response"></div>
+      <div id="player"></div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="playerModal" tabindex="-1" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalTitle">
+            <i class="fas fa-user-plus me-2"></i>Add/Edit Player
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="playerForm">
+            <input type="hidden" id="playerId">
+            
+            <h6 class="section-header">
+              <i class="fas fa-user me-2"></i>Personal Information
+            </h6>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Full Name *</label>
+                <input type="text" class="form-control" id="playerName" required placeholder="Enter player's full name">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Email Address *</label>
+                <input type="email" class="form-control" id="playerEmail" required placeholder="player@example.com">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Password *</label>
+                <input type="password" class="form-control" id="playerPassword" required placeholder="Enter secure password">
+                <div class="form-text">Leave blank when editing to keep current password</div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Phone Number *</label>
+                <input type="tel" class="form-control" id="playerPhone" required placeholder="+1234567890">
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nationality *</label>
+                <input type="text" class="form-control" id="playerNationality" required placeholder="e.g., Indian, Australian">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Date of Birth</label>
+                <input type="text" class="form-control" id="playerDob" placeholder="e.g., 07 July 1981">
+              </div>
+            </div>
+
+            <h6 class="section-header">
+              <i class="fas fa-baseball-ball me-2"></i>Professional Information
+            </h6>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Playing Role *</label>
+                <select class="form-select" id="playerSpecialization" required>
+                  <option value="">--Select Playing Role--</option>
+                  <option value="Batsman">Batsman</option>
+                  <option value="Bowler">Bowler</option>
+                  <option value="All-rounder">All-rounder</option>
+                  <option value="Wicketkeeper">Wicketkeeper</option>
+                  <option value="Wicketkeeper Batter">Wicketkeeper Batter</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Team *</label>
+                <select class="form-select" id="playerTeam" required>
+                  <option value="">--Select Team--</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Profile Image URL</label>
+              <input type="url" class="form-control" id="playerImage" placeholder="https://example.com/player-photo.jpg">
+              <div class="form-text">Provide a URL to the player's profile photo</div>
+            </div>
+
+            <h6 class="section-header">
+              <i class="fas fa-chart-line me-2"></i>Career Statistics
+            </h6>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Total Runs Scored</label>
+                <input type="number" class="form-control" id="playerRuns" placeholder="0" min="0">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Total Matches Played</label>
+                <input type="number" class="form-control" id="playerMatches" placeholder="0" min="0">
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label">Professional Debut Year</label>
+              <input type="text" class="form-control" id="playerDebut" placeholder="e.g., 2008">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button class="btn btn-primary" onclick="savePlayer()">
+            <i class="fas fa-save me-2"></i>Save Player
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
